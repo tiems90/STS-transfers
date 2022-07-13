@@ -65,6 +65,15 @@ buffered_events = spark.read.table("ship2ship.cargos_buffered").repartition(
 
 
 def ts_diff(ts1, ts2):
+    """Output the difference between two timestamps in seconds.
+
+    Args:
+        ts1 (Timestamp): First Timestamp
+        ts2 (Timestamp): Second Timestamp
+
+    Returns:
+        long: The difference between two timestamps in seconds.
+    """
     return abs(col(ts1).cast("long") - col(ts2).cast("long"))
 
 
