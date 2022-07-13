@@ -88,7 +88,7 @@ def time_window(sog1, sog2, heading1, heading2, radius):
         radius (double): buffer radius in degrees
 
     Returns:
-        _type_: dynamic time window in seconds based on the speed and radius
+        double: dynamic time window in seconds based on the speed and radius
     """
     v_x1 = col(sog1) * cos(col(heading1))
     v_y1 = col(sog1) * sin(col(heading1))
