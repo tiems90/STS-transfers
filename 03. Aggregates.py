@@ -56,7 +56,7 @@ lines = (
 )
 
 # COMMAND ----------
-# DBTITLE 2,Note here that this decreases the total number of rows across which we are running our comparisons.
+# DBTITLE 1,Note here that this decreases the total number of rows across which we are running our comparisons.
 
 lines.count()
 
