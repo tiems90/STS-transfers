@@ -101,7 +101,7 @@ to_plot = spark.read.table("ship_path").select("buffer").distinct()
 
 # COMMAND ----------
 
-# DBTITLE 1,Example Lines
+# DBTITLE 1,Example Buffer Paths
 # MAGIC %%mosaic_kepler
 # MAGIC to_plot "buffer" "geometry" 3_000
 
