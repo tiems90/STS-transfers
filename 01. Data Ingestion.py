@@ -12,9 +12,9 @@ mos.enable_mosaic(spark, dbutils)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC We begin with loading from a table. Here we use captured `AIS` data.
-# MAGIC 
+# MAGIC
 # MAGIC - MMSI: unique 9-digit identification code of the ship - numeric
 # MAGIC - VesselName: name of the ship - string
 # MAGIC - CallSign: unique callsign of the ship - string
@@ -83,8 +83,6 @@ display(cargos_indexed)
 # COMMAND ----------
 
 # MAGIC %%mosaic_kepler
-# MAGIC ship2ship.cargos_indexed "ix" "h3" 10_0000
+# MAGIC ship2ship.cargos_indexed "ix" "h3" 10_000
 
 # COMMAND ----------
-
-
