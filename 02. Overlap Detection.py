@@ -78,16 +78,27 @@ def ts_diff(ts1, ts2):
 
 
 def time_window(sog1, sog2, heading1, heading2, radius):
+    """Create dynamic time window based on speed, buffer radius and heading.
+
+    Args:
+        sog1 (double): vessel 1's speed over ground, in knots
+        sog2 (double): vessel 2's speed over ground, in knots
+        heading1 (double): vessel 1's heading angle in degrees
+        heading2 (double): vessel 2's heading angle in degrees
+        radius (double): buffer radius in degrees
+
+    Returns:
+        _type_: dynamic time window in seconds based on the speed and radius
+    """
     v_x1 = col(sog1) * cos(col(heading1))
     v_y1 = col(sog1) * sin(col(heading1))
     v_x2 = col(sog2) * cos(col(heading2))
     v_y2 = col(sog2) * sin(col(heading2))
-    v_relative = sqrt(
-        (v_x1 + v_x2) * (v_x1 + v_x2) + (v_y1 + v_y2) * (v_y1 + v_y2)
-    )  # compute relative vectors speed based x and y partial speeds
-    return (
-        v_relative * lit(1000) / lit(radius) / lit(3600)
-    )  # convert to m/s and determine ratio between speed and radius
+
+    # compute relative vectors speed based x and y partial speeds
+    v_relative = sqrt((v_x1 + v_x2) * (v_x1 + v_x2) + (v_y1 + v_y2) * (v_y1 + v_y2))
+    # convert to m/s and determine ratio between speed and radius
+    return v_relative * lit(1000) / lit(radius) / lit(3600)
 
 
 candidates = (
