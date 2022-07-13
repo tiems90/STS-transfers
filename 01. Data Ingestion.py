@@ -4,16 +4,17 @@
 # COMMAND ----------
 
 from pyspark.sql.functions import *
-from mosaic import *
+import mosaic as mos
+
 spark.conf.set("spark.databricks.labs.mosaic.index.system", "H3")
-enable_mosaic(spark, dbutils)
+mos.enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
-# MAGIC We begin with loading from a table. Here we use captured `AIS` data. 
-# MAGIC 
+# MAGIC
+# MAGIC We begin with loading from a table. Here we use captured `AIS` data.
+# MAGIC
 # MAGIC - MMSI: unique 9-digit identification code of the ship - numeric
 # MAGIC - VesselName: name of the ship - string
 # MAGIC - CallSign: unique callsign of the ship - string
@@ -25,7 +26,7 @@ enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
-cargos = spark.read.table('esg.cargos')
+cargos = spark.read.table("esg.cargos")
 display(cargos)
 
 # COMMAND ----------
@@ -34,44 +35,40 @@ display(cargos)
 
 # COMMAND ----------
 
-# MAGIC %md 
-# MAGIC We can convert the lat/lon from this table to a geometric representation. For illustrative purposes we opt for WKT representation. When storing the data later, we will opt for the more optimal WKB representation. 
+# MAGIC %md
+# MAGIC We can convert the lat/lon from this table to a geometric representation. For illustrative purposes we opt for WKT representation. When storing the data later, we will opt for the more optimal WKB representation.
 
 # COMMAND ----------
 
-cargos_geopoint = cargos.withColumn("point_geom", st_astext(st_point("longitude", "latitude")))
+cargos_geopoint = cargos.withColumn(
+    "point_geom", mos.st_astext(st_point("longitude", "latitude"))
+)
 display(cargos_geopoint)
 
 # COMMAND ----------
 
 # MAGIC %md ### Indexing
-# MAGIC To facilitate downstream analytics it is also possible to create a quick point index leveraging a chosen H3 resolution. 
-# MAGIC In this case, resolution `9` has an edge length of ~174 metres. 
+# MAGIC To facilitate downstream analytics it is also possible to create a quick point index leveraging a chosen H3 resolution.
+# MAGIC In this case, resolution `9` has an edge length of ~174 metres.
 
 # COMMAND ----------
 
-cargos_indexed = (
-  cargos_geopoint
-  .withColumn('ix',
-              point_index_geom("point_geom",resolution=lit(9))
-             )
-  .withColumn('sog_kmph', round(col("sog") * 1.852, 2))
-)
+cargos_indexed = cargos_geopoint.withColumn(
+    "ix", mos.point_index_geom("point_geom", resolution=lit(9))
+).withColumn("sog_kmph", round(col("sog") * 1.852, 2))
 display(cargos_indexed)
 
 # COMMAND ----------
 
 # MAGIC %md ## Exporting
-# MAGIC and we can write the treated output to a new table. 
+# MAGIC and we can write the treated output to a new table.
 
 # COMMAND ----------
 
 (
-  cargos_indexed
-   .withColumn('point_geom', st_aswkb('point_geom'))
-   .write
-   .mode('overwrite')
-   .saveAsTable('ship2ship.cargos_indexed')
+    cargos_indexed.withColumn("point_geom", mos.st_aswkb("point_geom"))
+    .write.mode("overwrite")
+    .saveAsTable("ship2ship.cargos_indexed")
 )
 
 # COMMAND ----------
@@ -81,7 +78,7 @@ display(cargos_indexed)
 # COMMAND ----------
 
 # MAGIC %md ## Visualisation
-# MAGIC And we can perform a quick visual inspection of the data. 
+# MAGIC And we can perform a quick visual inspection of the data.
 
 # COMMAND ----------
 
@@ -89,5 +86,3 @@ display(cargos_indexed)
 # MAGIC ship2ship.cargos_indexed "ix" "h3" 10_0000
 
 # COMMAND ----------
-
-
