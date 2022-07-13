@@ -14,8 +14,10 @@ mos.enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
-cargos_indexed = spark.read.table("ship2ship.cargos_indexed").repartition(
-    sc.defaultParallelism * 20
+cargos_indexed = (
+    spark.read.table("ship2ship.cargos_indexed")
+    .repartition(sc.defaultParallelism * 20)
+    .sample(0.01)
 )
 display(cargos_indexed)
 
@@ -28,6 +30,7 @@ cargos_indexed.count()
 # MAGIC %md ## Create Lines
 # MAGIC
 # MAGIC We can `groupBy` across a timewindow to give us aggregated geometries to work with.
+# MAGIC
 # MAGIC When we collect the various points within a timewindow, we want to construct the linestring by the order in which they were generated (timestamp).
 
 # COMMAND ----------
@@ -42,13 +45,13 @@ lines = (
         "coords",
         expr(
             """
-      array_sort(coords, (left, right) -> 
-        case 
-          when left.timestamp < right.timestamp then -1 
-          when left.timestamp > right.timestamp then 1 
-          else 0 
-        end
-      )"""
+        array_sort(coords, (left, right) -> 
+            case 
+            when left.timestamp < right.timestamp then -1 
+            when left.timestamp > right.timestamp then 1 
+            else 0 
+            end
+        )"""
         ),
     )
     .withColumn("line", mos.st_makeline(col("coords.point_geom")))
@@ -68,6 +71,7 @@ buffer = 200 * one_metre
 
 def get_buffer(line, buffer=buffer):
     """Create buffer as function of number of points in linestring
+    The buffer size is inversely proportional to the number of points, providing a larger buffer for slower ships.
 
     Args:
         line (geometry): linestring geometry as generated with st_makeline.
@@ -77,7 +81,6 @@ def get_buffer(line, buffer=buffer):
     """
     np = expr(f"st_numpoints({line})")
     max_np = lines.select(max(np)).collect()[0][0]
-    # inverse proportional to number of points, larger buffer for slower ships
     return lit(max_np) * lit(buffer) / np
 
 
@@ -105,6 +108,8 @@ to_plot = spark.read.table("ship_path").select("buffer").distinct()
 # COMMAND ----------
 
 # MAGIC %md ## Find All Candidates
+# MAGIC
+# MAGIC We employ a join strategy using Mosaic indices as before, but this time we leverage the buffered ship paths.
 
 # COMMAND ----------
 
@@ -139,9 +144,6 @@ candidates_lines = (
     .saveAsTable("ship2ship.overlap_candidates_lines")
 )
 
-# 18.73 min without Photon
-# 19.51 min with Photon
-
 # COMMAND ----------
 
 # MAGIC %sql
@@ -149,6 +151,7 @@ candidates_lines = (
 
 # COMMAND ----------
 
+# DBTITLE 1,We can show the most common locations for overlaps happening, as well some example ship paths during those overlaps.
 # MAGIC %sql
 # MAGIC CREATE OR REPLACE TEMPORARY VIEW agg_overlap AS
 # MAGIC SELECT index AS ix, count(*) AS count, first(line_1) as line_1, first(line_2) as line_2
@@ -161,6 +164,11 @@ candidates_lines = (
 # MAGIC %%mosaic_kepler
 # MAGIC "agg_overlap" "ix" "h3" 2_000
 
+# COMMAND ----------
+
+# MAGIC %md ## Filtering Harbours
+# MAGIC In the data we see many overlaps near harbours. We can reasonably assume that these are overlaps due to being in close proximity of the harbour, not a transfer.
+# MAGIC Therefore, we can filter those out below.
 # COMMAND ----------
 
 harbours_h3 = spark.read.table("ship2ship.harbours_h3")
@@ -185,5 +193,3 @@ matches.count()
 
 # MAGIC %%mosaic_kepler
 # MAGIC matches "line_1" "geometry" 2_000
-
-# COMMAND ----------
