@@ -12,9 +12,9 @@ mos.enable_mosaic(spark, dbutils)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC
+# MAGIC 
 # MAGIC We begin with loading from a table. Here we use captured `AIS` data.
-# MAGIC
+# MAGIC 
 # MAGIC - MMSI: unique 9-digit identification code of the ship - numeric
 # MAGIC - VesselName: name of the ship - string
 # MAGIC - CallSign: unique callsign of the ship - string
@@ -41,7 +41,7 @@ display(cargos)
 # COMMAND ----------
 
 cargos_geopoint = cargos.withColumn(
-    "point_geom", mos.st_astext(st_point("longitude", "latitude"))
+    "point_geom", mos.st_astext(mos.st_point("longitude", "latitude"))
 )
 display(cargos_geopoint)
 
@@ -86,3 +86,5 @@ display(cargos_indexed)
 # MAGIC ship2ship.cargos_indexed "ix" "h3" 10_0000
 
 # COMMAND ----------
+
+
