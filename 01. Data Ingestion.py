@@ -74,6 +74,7 @@ display(cargos_indexed)
 
 # COMMAND ----------
 
+# DBTITLE 1,We can optimise our table to colocate data and make querying faster
 # MAGIC %sql OPTIMIZE ship2ship.cargos_indexed ZORDER by (ix, timestamp)
 
 # COMMAND ----------

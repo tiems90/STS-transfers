@@ -28,36 +28,16 @@ cargos_indexed.count()
 # MAGIC %md ## Create Lines
 # MAGIC
 # MAGIC We can `groupBy` across a timewindow to give us aggregated geometries to work with.
+# MAGIC When we collect the various points within a timewindow, we want to construct the linestring by the order in which they were generated (timestamp).
 
 # COMMAND ----------
-
-
-def line_aggregation(dataframe, points_column, order_column):
-    (
-        dataframe.agg(
-            collect_list(struct(col(points_column), col(order_column))).alias("coords")
-        )
-        .withColumn(
-            "coords",
-            expr(
-                f"""
-                    array_sort(coords, (left, right) -> 
-                        case 
-                        when left.{order_column} < right.{order_column} then -1 
-                        when left.{order_column} > right.{order_column} then 1 
-                        else 0 
-                        end
-                    )"""
-            ),
-        )
-        .withColumn("line", mos.st_makeline(col("coords.point_geom")))
-    )
-
 
 lines = (
     cargos_indexed.repartition(sc.defaultParallelism * 20)
     .groupBy("mmsi", window("timestamp", "15 minutes"))
+    # We link the points to their respective timestamps in the aggregation
     .agg(collect_list(struct(col("point_geom"), col("timestamp"))).alias("coords"))
+    # And then sort our array of points by the timestamp
     .withColumn(
         "coords",
         expr(
@@ -76,6 +56,7 @@ lines = (
 )
 
 # COMMAND ----------
+# DBTITLE 1,Note here that this decreases the total number of rows across which we are running our comparisons.
 
 lines.count()
 
@@ -107,14 +88,7 @@ cargo_movement = (
     .withColumn("ix", mos.mosaic_explode("buffer_geom", lit(9)))
 )
 
-(
-    cargo_movement
-    # .filter("mmsi == 636016431")
-    # .select(col("ix.index_id").alias('ix'))
-    .createOrReplaceTempView("ship_path")
-)
-
-# COMMAND ----------
+(cargo_movement.createOrReplaceTempView("ship_path"))
 
 display(spark.read.table("ship_path"))
 
@@ -124,13 +98,9 @@ to_plot = spark.read.table("ship_path").select("buffer").distinct()
 
 # COMMAND ----------
 
-to_plot.count()
-
-# COMMAND ----------
-
 # DBTITLE 1,Example Lines
 # MAGIC %%mosaic_kepler
-# MAGIC to_plot "buffer" "geometry" 3000
+# MAGIC to_plot "buffer" "geometry" 3_000
 
 # COMMAND ----------
 
@@ -189,7 +159,7 @@ candidates_lines = (
 # COMMAND ----------
 
 # MAGIC %%mosaic_kepler
-# MAGIC "agg_overlap" "ix" "h3" 2000
+# MAGIC "agg_overlap" "ix" "h3" 2_000
 
 # COMMAND ----------
 
@@ -214,6 +184,6 @@ matches.count()
 # COMMAND ----------
 
 # MAGIC %%mosaic_kepler
-# MAGIC matches "line_1" "geometry" 2000
+# MAGIC matches "line_1" "geometry" 2_000
 
 # COMMAND ----------
