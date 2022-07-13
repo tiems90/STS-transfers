@@ -14,14 +14,8 @@ mos.enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
-cargos_indexed = (
-    spark.read.table("ship2ship.cargos_indexed")
-    .repartition(sc.defaultParallelism * 20)
-    .filter(
-        col("timestamp").between(
-            "2018-01-31T00:00:00.000+0000", "2018-01-31T23:59:00.000+0000"
-        )
-    )
+cargos_indexed = spark.read.table("ship2ship.cargos_indexed").repartition(
+    sc.defaultParallelism * 20
 )
 display(cargos_indexed)
 
@@ -36,6 +30,29 @@ cargos_indexed.count()
 # MAGIC We can `groupBy` across a timewindow to give us aggregated geometries to work with.
 
 # COMMAND ----------
+
+
+def line_aggregation(dataframe, points_column, order_column):
+    (
+        dataframe.agg(
+            collect_list(struct(col(points_column), col(order_column))).alias("coords")
+        )
+        .withColumn(
+            "coords",
+            expr(
+                f"""
+                    array_sort(coords, (left, right) -> 
+                        case 
+                        when left.{order_column} < right.{order_column} then -1 
+                        when left.{order_column} > right.{order_column} then 1 
+                        else 0 
+                        end
+                    )"""
+            ),
+        )
+        .withColumn("line", mos.st_makeline(col("coords.point_geom")))
+    )
+
 
 lines = (
     cargos_indexed.repartition(sc.defaultParallelism * 20)
