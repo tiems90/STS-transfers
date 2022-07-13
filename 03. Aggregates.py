@@ -14,10 +14,8 @@ mos.enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
-cargos_indexed = (
-    spark.read.table("ship2ship.cargos_indexed")
-    .repartition(sc.defaultParallelism * 20)
-    .sample(0.01)
+cargos_indexed = spark.read.table("ship2ship.cargos_indexed").repartition(
+    sc.defaultParallelism * 20
 )
 display(cargos_indexed)
 
