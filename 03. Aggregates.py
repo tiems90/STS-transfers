@@ -68,12 +68,19 @@ one_metre = 0.00001 - 0.000001
 buffer = 200 * one_metre
 
 
-def get_buffer(line):
+def get_buffer(line, buffer=buffer):
+    """Create buffer as function of number of points in linestring
+
+    Args:
+        line (geometry): linestring geometry as generated with st_makeline.
+
+    Returns:
+        double: buffer size in degrees
+    """
     np = expr(f"st_numpoints({line})")
     max_np = lines.select(max(np)).collect()[0][0]
-    return (
-        lit(max_np) * lit(buffer) / np
-    )  # inverse proportional to number of points, larger buffer for slower ships
+    # inverse proportional to number of points, larger buffer for slower ships
+    return lit(max_np) * lit(buffer) / np
 
 
 cargo_movement = (
