@@ -259,7 +259,9 @@ matches = (
 )
 ```
 
-This yields interesting results, including areas further out at sea. Additional extensions can be made 
+This yields interesting results, including potential STS transfers further out at sea:
 
 
 ![Line Results Without Harbours](./images/harbours_filtered.png)
+
+Additional extensions can be made in a similar fashion to extend the scope, but this approach can fundamentally change the detection of unauthorised STS transfers from a reactionary, bespoke, and manual analysis to a proactive one that takes place automatically, at scale, and can include advanced risk models to flag and alert upon registering anomalies.
