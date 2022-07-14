@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md ## Line Aggregation
-# MAGIC 
+# MAGIC
 # MAGIC Instead of the point-to-point evaluation, we will instead be aggregating into lines and comparing as such.
 
 # COMMAND ----------
@@ -26,9 +26,9 @@ cargos_indexed.count()
 # COMMAND ----------
 
 # MAGIC %md ## Create Lines
-# MAGIC 
+# MAGIC
 # MAGIC We can `groupBy` across a timewindow to give us aggregated geometries to work with.
-# MAGIC 
+# MAGIC
 # MAGIC When we collect the various points within a timewindow, we want to construct the linestring by the order in which they were generated (timestamp).
 
 # COMMAND ----------
@@ -106,7 +106,7 @@ to_plot = spark.read.table("ship_path").select("buffer").limit(3_000)
 # COMMAND ----------
 
 # MAGIC %md ## Find All Candidates
-# MAGIC 
+# MAGIC
 # MAGIC We employ a join strategy using Mosaic indices as before, but this time we leverage the buffered ship paths.
 
 # COMMAND ----------
@@ -164,7 +164,7 @@ candidates_lines = (
 
 # COMMAND ----------
 
-# MAGIC %md ## Filtering Harbours
+# MAGIC %md ## Filtering Out Harbours
 # MAGIC In the data we see many overlaps near harbours. We can reasonably assume that these are overlaps due to being in close proximity of the harbour, not a transfer.
 # MAGIC Therefore, we can filter those out below.
 
@@ -186,17 +186,18 @@ matches = (
 
 # COMMAND ----------
 
-matches.count()
-
-# COMMAND ----------
-
-# MAGIC %%mosaic_kepler
-# MAGIC matches "line_1" "geometry" 2_000
-
-# COMMAND ----------
-
 (
     matches.write.mode("overwrite")
     .option("overwriteSchema", "true")
     .saveAsTable("ship2ship.overlap_candidates_lines_filtered")
 )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT COUNT(*) FROM ship2ship.overlap_candidates_lines_filtered";
+
+# COMMAND ----------
+
+# MAGIC %%mosaic_kepler
+# MAGIC ship2ship.overlap_candidates_lines_filtered "line_1" "geometry" 2_000
