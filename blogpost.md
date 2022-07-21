@@ -6,7 +6,7 @@ In a world full of embargoes and barriers to trade, there will always be actors 
 
 Nowadays, leveraging scalable cloud infrastructure and big data processing technologies like Apache Spark, these analyses can move from a reactive approach to a pro-active one; actively monitoring marine activity and highlighting potentially illegal STS transfers. 
 
-This post will show two ways of implementing an STS transfer detection algorithm; starting with an event-based approach, and following up with a more advanced aggregate approach. We will also discuss ways to optimise this with [Mosaic](https://databrickslabs.github.io/mosaic/) on Databricks. This content was It was presented at the [Data and AI Summit 2022](https://databricks.com/dataaisummit/session/mosaic-framework-geospatial-analytics-scale).
+This post will show two ways of implementing an STS transfer detection algorithm; starting with an event-based approach, and following up with a more advanced aggregate approach. We will also discuss ways to optimise this with [Mosaic](https://databrickslabs.github.io/mosaic/) on Databricks. This content was It was presented at the [Data and AI Summit 2022](https://www.youtube.com/watch?v=XQNflqbgP7Q).
 
 ## Data Ingestion
 
