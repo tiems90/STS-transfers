@@ -163,7 +163,7 @@ lines = (
     .groupBy("mmsi", window("BaseDateTime", "15 minutes"))
     # We link the points to their respective timestamps in the aggregation
     .agg(collect_list(struct(col("point_geom"), col("BaseDateTime"))).alias("coords"))
-    # And then sort our array of points by the timestamp
+    # And then sort our array of points by the timestamp to create a trajectory
     .withColumn(
         "coords",
         expr(
