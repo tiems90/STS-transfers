@@ -92,6 +92,29 @@ In the cases where it is necessary to compare the actual polygons, this comparis
 Beyond the spatial dimension, we also want to take time into account. Thus, we indicate that we only wish to compare pings that happen within a certain time window. We calculate that time window dynamically based on the speed and heading of the vessels.
 
 ```python
+def time_window(sog1, sog2, heading1, heading2, radius):
+    """Create dynamic time window based on speed, buffer radius and heading.
+
+    Args:
+        sog1 (double): vessel 1's speed over ground, in knots
+        sog2 (double): vessel 2's speed over ground, in knots
+        heading1 (double): vessel 1's heading angle in degrees
+        heading2 (double): vessel 2's heading angle in degrees
+        radius (double): buffer radius in degrees
+
+    Returns:
+        double: dynamic time window in seconds based on the speed and radius
+    """
+    v_x1 = col(sog1) * cos(col(heading1))
+    v_y1 = col(sog1) * sin(col(heading1))
+    v_x2 = col(sog2) * cos(col(heading2))
+    v_y2 = col(sog2) * sin(col(heading2))
+
+    # compute relative vectors speed based on x and y partial speeds
+    v_relative = sqrt((v_x1 + v_x2) * (v_x1 + v_x2) + (v_y1 + v_y2) * (v_y1 + v_y2))
+    # convert to m/s and determine ratio between speed and radius
+    return v_relative * lit(1000) / lit(radius) / lit(3600)
+
 candidates = (
     buffered_events.alias("a")
     .join(
