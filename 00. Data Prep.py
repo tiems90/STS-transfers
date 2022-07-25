@@ -52,8 +52,7 @@ schema = """
 """
 
 AIS_df = (
-    spark.read
-    .csv("/tmp/ship2ship", header=True, schema=schema)
+    spark.read.csv("/tmp/ship2ship", header=True, schema=schema)
     .filter("VesselType = 70")  # Only select cargos
     .filter("Status IS NOT NULL")
 )
@@ -71,9 +70,9 @@ display(AIS_df)
 # COMMAND ----------
 
 # MAGIC %md ## Harbours
-# MAGIC 
+# MAGIC
 # MAGIC This data can be obtained from [here](https://data-usdot.opendata.arcgis.com/datasets/usdot::ports-major/about), and loaded accordingly.
-# MAGIC 
+# MAGIC
 # MAGIC We are choosing a buffer of `10 km` around harbours to arbitrarily define an area wherein we do not expect ship-to-ship transfers to take place.
 # MAGIC Since our projection is not in metres, we convert from decimal degrees. With `(0.00001 - 0.000001)` as being equal to one metres at the equator
 # MAGIC Ref: http://wiki.gis.com/wiki/index.php/Decimal_degrees
@@ -132,5 +131,3 @@ display(harbours_h3)
 # MAGIC "harbours_h3" "h3" "h3" 5_000
 
 # COMMAND ----------
-
-

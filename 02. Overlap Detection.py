@@ -1,6 +1,6 @@
 # Databricks notebook source
 # MAGIC %md # Overlap Detection
-# MAGIC 
+# MAGIC
 # MAGIC We now try to detect potentially overlapping pings using a buffer on a particular day.
 
 # COMMAND ----------
@@ -26,14 +26,14 @@ cargos_indexed.count()
 # COMMAND ----------
 
 # MAGIC %md ## Buffering
-# MAGIC 
+# MAGIC
 # MAGIC 1. Convert the point into a polygon by buffering it with a certain area to turn this into a circle.
 # MAGIC 2. Index the polygon to leverage more performant querying.
-# MAGIC 
+# MAGIC
 # MAGIC ![](http://1fykyq3mdn5r21tpna3wkdyi-wpengine.netdna-ssl.com/wp-content/uploads/2018/06/image14-1.png)
-# MAGIC 
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
+# MAGIC
 # MAGIC Choosing a buffer of `(1*0.001 - 1*0.0001)` as being equal to 99.99 metres at the equator
 # MAGIC Ref: http://wiki.gis.com/wiki/index.php/Decimal_degrees
 
