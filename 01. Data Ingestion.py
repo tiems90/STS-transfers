@@ -13,13 +13,13 @@ mos.enable_mosaic(spark, dbutils)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC
+# MAGIC 
 # MAGIC We begin with loading from a table. Here we use captured `AIS` data.
-# MAGIC
+# MAGIC 
 # MAGIC - MMSI: unique 9-digit identification code of the ship - numeric
 # MAGIC - VesselName: name of the ship - string
 # MAGIC - CallSign: unique callsign of the ship - string
-# MAGIC - timestamp: timestamp of the AIS message - datetime
+# MAGIC - BaseDateTime: timestamp of the AIS message - datetime
 # MAGIC - LAT: latitude of the ship (in degree: [-90 ; 90], negative value represents South, 91 indicates ‘not available’) - numeric
 # MAGIC - LON: longitude of the ship (in degree: [-180 ; 180], negative value represents West, 181 indicates ‘not available’) - numeric
 # MAGIC - SOG: speed over ground, in knots - numeric
@@ -76,5 +76,3 @@ display(cargos_indexed)
 
 # MAGIC %%mosaic_kepler
 # MAGIC ship2ship.cargos_indexed "ix" "h3" 10_000
-
-# COMMAND ----------
