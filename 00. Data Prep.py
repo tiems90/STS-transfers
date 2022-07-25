@@ -23,9 +23,11 @@ dbutils.fs.mkdirs("/tmp/ship2ship")
 # MAGIC %sh
 # MAGIC # see: https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2018/index.html
 # MAGIC # we download data to dbfs:// mountpoint (/dbfs)
-# MAGIC cd /dbfs/tmp/ship2ship/
+# MAGIC mkdir /ship2ship/
+# MAGIC cd /ship2ship/
 # MAGIC wget -np -r -nH -L --cut-dirs=4 https://coast.noaa.gov/htdata/CMSP/AISDataHandler/2018/AIS_2018_01_31.zip > /dev/null 2>&1
 # MAGIC unzip AIS_2018_01_31.zip
+# MAGIC mv AIS_2018_01_31.csv /dbfs/tmp/ship2ship/
 
 # COMMAND ----------
 
@@ -50,7 +52,7 @@ schema = """
 """
 
 AIS_df = (
-    spark.read.option("badRecordsPath", "/tmp/ais_invalid")  # Quarantine bad records
+    spark.read
     .csv("/tmp/ship2ship", header=True, schema=schema)
     .filter("VesselType = 70")  # Only select cargos
     .filter("Status IS NOT NULL")
@@ -69,9 +71,9 @@ display(AIS_df)
 # COMMAND ----------
 
 # MAGIC %md ## Harbours
-# MAGIC
+# MAGIC 
 # MAGIC This data can be obtained from [here](https://data-usdot.opendata.arcgis.com/datasets/usdot::ports-major/about), and loaded accordingly.
-# MAGIC
+# MAGIC 
 # MAGIC We are choosing a buffer of `10 km` around harbours to arbitrarily define an area wherein we do not expect ship-to-ship transfers to take place.
 # MAGIC Since our projection is not in metres, we convert from decimal degrees. With `(0.00001 - 0.000001)` as being equal to one metres at the equator
 # MAGIC Ref: http://wiki.gis.com/wiki/index.php/Decimal_degrees
@@ -99,7 +101,7 @@ major_ports = (
         to_json(col("feature.geometry")).alias("json_geometry"),
     )
     .withColumn("geom", mos.st_aswkt(mos.st_geomfromgeojson("json_geometry")))
-    .select(col("properties.PORT_NAME").alias("Name"), "geom")
+    .select(col("properties.PORT_NAME").alias("name"), "geom")
     .withColumn("geom", mos.st_buffer("geom", lit(buffer)))
 )
 display(major_ports)
@@ -112,8 +114,8 @@ display(major_ports)
 # COMMAND ----------
 
 (
-    major_ports.select("Name", mos.mosaic_explode("geom", lit(9)).alias("mos"))
-    .select("Name", col("mos.index_id").alias("h3"))
+    major_ports.select("name", mos.mosaic_explode("geom", lit(9)).alias("mos"))
+    .select("name", col("mos.index_id").alias("h3"))
     .write.mode("overwrite")
     .format("delta")
     .saveAsTable("ship2ship.harbours_h3")
@@ -130,3 +132,5 @@ display(harbours_h3)
 # MAGIC "harbours_h3" "h3" "h3" 5_000
 
 # COMMAND ----------
+
+
