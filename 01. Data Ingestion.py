@@ -27,24 +27,12 @@ mos.enable_mosaic(spark, dbutils)
 
 # COMMAND ----------
 
-cargos = spark.read.table("esg.cargos")
+cargos = spark.read.table("ship2ship.AIS")
 display(cargos)
 
 # COMMAND ----------
 
 # MAGIC %md ## Data Transformation
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC We can convert the lat/lon from this table to a geometric representation. For illustrative purposes we opt for WKT representation. When storing the data later, we will opt for the more optimal WKB representation.
-
-# COMMAND ----------
-
-cargos_geopoint = cargos.withColumn(
-    "point_geom", mos.st_astext(mos.st_point("longitude", "latitude"))
-)
-display(cargos_geopoint)
 
 # COMMAND ----------
 
@@ -54,9 +42,11 @@ display(cargos_geopoint)
 
 # COMMAND ----------
 
-cargos_indexed = cargos_geopoint.withColumn(
-    "ix", mos.point_index_geom("point_geom", resolution=lit(9))
-).withColumn("sog_kmph", round(col("sog") * 1.852, 2))
+cargos_indexed = (
+    cargos.withColumn("point_geom", mos.st_point("LON", "LAT"))
+    .withColumn("ix", mos.point_index_geom("point_geom", resolution=lit(9)))
+    .withColumn("sog_kmph", round(col("sog") * 1.852, 2))
+)
 display(cargos_indexed)
 
 # COMMAND ----------
@@ -75,7 +65,7 @@ display(cargos_indexed)
 # COMMAND ----------
 
 # DBTITLE 1,We can optimise our table to colocate data and make querying faster
-# MAGIC %sql OPTIMIZE ship2ship.cargos_indexed ZORDER by (ix, timestamp)
+# MAGIC %sql OPTIMIZE ship2ship.cargos_indexed ZORDER by (ix, BaseDateTime)
 
 # COMMAND ----------
 
