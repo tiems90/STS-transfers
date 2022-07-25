@@ -18,7 +18,7 @@ Raw positional data does not have any native geometrical concepts. Positions are
 ```python
 display(
   cargos
-  .withColumn("point_geom",st_astext(st_point("LON", "LAT")))
+  .withColumn("point_geom", st_astext(st_point("LON", "LAT")))
 )
 ```
 
