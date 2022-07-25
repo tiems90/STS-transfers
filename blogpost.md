@@ -8,9 +8,6 @@ Nowadays, by leveraging scalable cloud infrastructure and big data processing te
 This blog  will cover two approaches to STS transfer detection; starting with an event-based approach, and following up with an advanced aggregate approach. We will also discuss ways to optimise this with [Mosaic](https://databrickslabs.github.io/mosaic/) on Databricks. This content was presented at the [Data and AI Summit 2022](https://www.youtube.com/watch?v=XQNflqbgP7Q).
 
 ## Data Ingestion
-
-For the purpose of this analysis we will be leveraging Vessel traffic data, or Automatic Identification System (AIS) data, collected by the US Coast Guard. This data contains information such as timestamps, locations, speeds and ship types. 
-
 For the purpose of this analysis we will be leveraging Vessel traffic data, or [Automatic Identification System (AIS)](https://en.wikipedia.org/wiki/Automatic_identification_system) data, collected by the US Coast Guard. This data contains information such as timestamps, locations, speeds and ship types.
 
 Raw positional data does not have any native geometrical concepts. Positions are represented via longitude and latitude columns. To work with this data at scale, and leverage Mosaic, we can transform these longitudes and latitudes into a geometric representation as follows:
@@ -33,7 +30,7 @@ cargos_indexed = (
 )
 ```
 
-Before we conduct any analysis, we will write out our indexed spark dataframe to a [delta](https://delta.io/) to colocate related information in the same set of files, which will drastically improve our ability to process very large volumes of geospatial data. 
+Before we conduct any analysis, we will write out our indexed spark dataframe to a [delta](https://delta.io/) table, and optimise it to take advantage of [ZORDERing](https://docs.databricks.com/delta/optimizations/file-mgmt.html#z-ordering-multi-dimensional-clustering) across our two main dimensions of interest: our geospatial index and timestamp. It is important to note that H3 indices that are spatially close one to another will also numerically be close one to another with respect to H3 id. This makes them a really good candidate for ZORDERing. Z-Ordering is a [technique](https://en.wikipedia.org/wiki/Z-order_curve) to colocate related information in the same set of files, which will drastically improve our ability to process very large volumes of geospatial data. 
 
 As aforementioned, storing our geometry itself is more efficient as a WKB than a WKT, so we will convert it accordingly.
 
