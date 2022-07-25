@@ -18,9 +18,7 @@ Raw positional data does not have any native geometrical concepts. Positions are
 ```python
 display(
   cargos
-  .withColumn("point_geom",
-            st_astext(st_point("longitude", "latitude"))
-            )
+  .withColumn("point_geom",st_astext(st_point("LON", "LAT")))
 )
 ```
 
@@ -31,7 +29,7 @@ However, proximity joins in spark are very costly if applied naively commonly re
 ```python
 cargos_indexed = (
   cargos
-  .withColumn('ix', point_index_lonlat("longitude", "latitude", lit(9)))
+  .withColumn('ix', point_index_lonlat("LON", "LAT", lit(9)))
 )
 ```
 
@@ -222,7 +220,7 @@ cargo_movement = (
 )
 ```
 
-This produces the following type of shapes fo compare:
+This produces the following types of shapes to compare:
 
 ![Dynamic Buffer Paths](./images/dynamic_buffer.png)
 
