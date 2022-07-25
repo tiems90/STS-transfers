@@ -83,7 +83,7 @@ We can now implement our final algorithm to construct a list of overlaps in time
 
 ![Core Mosaic Chips](./images/mosaic_chips.png)
 
-Below, you will see this implemented in our where clause, where, if either side compares across a core index, there is no need to call `ST_INTERSECTS`. 
+Below, you will see this implemented in our where clause, where, if either side compares across a core index, there is no need to call `st_intersects`. 
 
 In the cases where it is necessary to compare the actual polygons, this comparison happens across a simplified shape of just the small chip of the larger polygon–making the underlying calculation much simpler.
 
